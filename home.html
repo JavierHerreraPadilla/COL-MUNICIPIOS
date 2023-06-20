@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
+    <title>Departamentos y municipios COL</title>
+</head>
+<body>
+
+
+
+
+<nav class="navbar info text-white">
+    <div class="container">
+      <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start">
+        <a href="/" class="d-flex align-items-center mb-2 mb-lg-0 text-white text-decoration-none">
+          <svg class="bi me-2" width="40" height="32" role="img" aria-label="Bootstrap"><use xlink:href="#bootstrap"></use></svg>
+        </a>
+
+        <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
+          <li><a href="{{ url_for('home') }}" class="nav-link px-5 text-light"><b>API DEPARTAMENTOS Y MUNICIPIOS COL</b></a></li>
+          <li><a href="https://www.linkedin.com/in/javier-ignacio-herrera-padilla-516690a4/" target="_blank" class="nav-link px-2 text-white">por Javier Herrera</a></li>
+        </ul>
+      </div>
+    </div>
+</nav>
+
+
+<div class="p-3">
+  <h1 class="p-4" style="font-weight:200; font-size:50px;">API departamentos y municipios de Colombia</h1>
+  <p class="ps-4 mb-5" style="font-weight:200; font-size:20px;">API para obtener los departamentos y sus correspondientes municipios en Colombia.<br>
+      No tienes que crear una tabla en la base de datos de tu aplicación. Simplemente llama esta API y tienes la inforación instantánea para popular los <code>inputs</code> de tus formularios.<br>
+      La información se obtuvo de Wikipedia <a href="https://es.wikipedia.org/wiki/Municipios_de_Colombia" target="_blank" style="text-decoration:none;">Municipios de Colombia</a> <a href="#scrape" style="text-decoration:NONE;">(código abajo)</a>.
+  </p>
+  <div class="container text-center">
+  <h3 style="font-weight:200;">ASÍ FUNCIONA:</h3><br>
+  <form method="POST" action="">
+     <label for="departamentos">Departamentos:</label>
+     <select name="departamentos" id="departamentos"></select>
+     <br><br>
+     <label for="municipios">Municipios:</label>
+     <select name="municipios" id="municipios"></select>
+     <br><br>
+  </form>
+  </div>
+  <div class="container bg-code ps-3">
+   <pre>
+   <code>
+   <h6 class="code-title">END POINTS</h6>
+   http://127.0.0.1:8000/all              <span style="color:red;">   <-- Todos los deparamentos</span>
+   http://127.0.0.1:8000/antioquia        <span style="color:red;">   <-- Todos los municipios de Antioquia</span>
+   <hr>
+   <h6 class="code-title">CURL</h6>
+   curl -X 'GET' \
+     'http://127.0.0.1:8000/all' \
+     -H 'accept: application/json'
+
+   curl -X 'GET' \
+     'http://127.0.0.1:8000/antioquia' \
+     -H 'accept: application/json'
+
+    <hr>
+    <h6 class="code-title">REQUEST USANDO PYTHON</h6>
+    departamentos = requests.get("http://127.0.0.1:8000/all").json()
+    municipios = requests.get("http://127.0.0.1:8000/departamento").json()
+    <hr>
+    <h6 class="code-title ">RESPUESTA</h6>
+       <div class="row mt-0 pt-0">
+           <div class="col-5 mt-0 pt-0">
+               DEPARTAMENTOS
+
+               [
+              "Amazonas",
+              "Antioquia",
+              "Arauca",
+              "Atlántico",
+              "Bolívar",
+              "Boyacá",
+              "Caldas",
+              "Caquetá",
+               ...
+              ]
+           </div>
+           <div class="col-5">
+               MUNICIPIOS
+
+               [ "Abejorral",
+                "Abriaquí",
+                "Alejandría",
+                "Amagá",
+                "Amalfi",
+                "Andes",
+                "Angelópolis",
+                "Angostura",
+                "Anorí",
+                "Anzá",
+                "Apartadó",
+                "Arboletes",
+                ...
+               ]
+           </div>
+       </div>
+
+    </code>
+    </pre>
+   </div>
+</div>
+
+
+
+<div class="p-3" id="scrape">
+  <h1 class="p-4" style="font-weight:200; font-size:50px;">Scrapping de información</h1>
+  <p class="ps-4 mb-5" style="font-weight:200; font-size:20px;">
+      Unsando Python BeautifulSoup, se obtuvo la información de departamentos y municipios.<br>
+  </p>
+  <div class="container bg-code ps-3">
+   <pre>
+   <code>
+   <h6 class="code-title">SCRAPPING</h6>
+   import requests
+   from bs4 import BeautifulSoup
+   import json
+
+   response = requests.get("https://es.wikipedia.org/wiki/Municipios_de_Colombia")
+   soup = BeautifulSoup(response.text, 'html.parser')
+   departamentos = dict()
+   table_rows = soup.find(class_="sortable").find_all("tr")
+   table_rows = table_rows[1:]
+   for row in table_rows:
+      tds = row.find_all("td")
+      departamentos[tds[0].text.strip().replace('\xa0', '')] = {"num_municipios": int(tds[1].text.strip()) if tds[1].text.strip() else 0,"url_municipios":"https://es.wikipedia.org/" + tds[1].a["href"] if tds[1].a else None, "area_no": int(tds[2].text.strip()) if tds[2].text.strip() else 0}
+
+   for departamento, data in departamentos.items():
+      if data.get("url_municipios"):
+         municipio_response = requests.get(data.get("url_municipios")).text
+      else:
+         continue
+      soup_municipios = BeautifulSoup(municipio_response)
+      try:
+         tr_municipios = soup_municipios.find("table", class_="sortable").find("tbody").find_all("tr")[1:]
+      except:
+         print("El link no tiene tabla de municipios")
+         continue
+      list_municipios = list()
+      for municipio in tr_municipios:
+         list_municipios.append(municipio.find_all("td")[1].text.strip())
+         departamentos[departamento]["municipios"] = list_municipios
+
+   with open("deps.json", "w") as f:
+      json.dump(departamentos, f, ensure_ascii=False)
+
+    </code>
+    </pre>
+   </div>
+</div>
+
+
+
+<div class="p-3">
+  <h1 class="p-4" style="font-weight:200; font-size:50px;">Ejemplo Implementación con JavaScript</h1>
+  <p class="ps-4 mb-5" style="font-weight:200; font-size:20px;">
+      Implementación de los Dropdowns con JavaScript<br>
+  </p>
+  <div class="container bg-code ps-3">
+   <pre>
+   <code>
+   <h6 class="code-title">AJAX Requests con JS</h6>
+        // Función para popular el campo "select" con id="departamentos"
+      function populateDepartamentos() {
+          var departamentosSelect = document.getElementById('departamentos');
+          departamentosSelect.innerHTML = '';
+          var xhr = new XMLHttpRequest();
+          xhr.open('GET', '/all');
+          xhr.onload = function() {
+              if (xhr.status === 200) {
+                  var data = JSON.parse(xhr.responseText);
+                  data.forEach(function(departamento) {
+                      var option = document.createElement('option');
+                     option.value = departamento;
+                      option.text = departamento;
+                      departamentosSelect.appendChild(option);
+                  });
+                  // Trigger change event to populate "municipios" select field with the default selected departamento
+                  departamentosSelect.dispatchEvent(new Event('change'));
+              } else {
+                  console.log('Request failed. Status:', xhr.status);
+              }
+          };
+          xhr.send();
+      }
+
+       // Ejecutar la función para popular el campo "select" cuando se carga la página
+       populateDepartamentos();
+
+       // Función para popular el campo "municipios" cuando el valor del campo "departamentos" cambia
+    document.getElementById('departamentos').addEventListener('change', function() {
+           var selectedDepartamento = this.value;
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', '/' + selectedDepartamento);
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    var municipiosSelect = document.getElementById('municipios');
+                    municipiosSelect.innerHTML = '';
+                    var data = JSON.parse(xhr.responseText);
+                    if (data && data[selectedDepartamento]) {
+                        data[selectedDepartamento].forEach(function(item) {
+                            var option = document.createElement('option');
+                            option.value = item;
+                            option.text = item;
+                            municipiosSelect.appendChild(option);
+                        });
+                    }
+                } else {
+                    console.log('Request failed. Status:', xhr.status);
+                }
+            };
+            xhr.send();
+    });
+
+    </code>
+    </pre>
+   </div>
+</div>
+
+
+
+</body>
+  <script>
+        // Function to populate the "departamentos" select field
+      function populateDepartamentos() {
+          var departamentosSelect = document.getElementById('departamentos');
+          departamentosSelect.innerHTML = '';
+          var xhr = new XMLHttpRequest();
+          xhr.open('GET', '/all');
+          xhr.onload = function() {
+              if (xhr.status === 200) {
+                  var data = JSON.parse(xhr.responseText);
+                  data.forEach(function(departamento) {
+                      var option = document.createElement('option');
+                     option.value = departamento;
+                      option.text = departamento;
+                      departamentosSelect.appendChild(option);
+                  });
+                  departamentosSelect.dispatchEvent(new Event('change'));
+              } else {
+                  console.log('Request failed. Status:', xhr.status);
+              }
+          };
+          xhr.send();
+      }
+
+       // Populate "departamentos" select field on page load
+       populateDepartamentos();
+
+document.getElementById('departamentos').addEventListener('change', function() {
+           var selectedDepartamento = this.value;
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', '/' + selectedDepartamento);
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    var municipiosSelect = document.getElementById('municipios');
+                    municipiosSelect.innerHTML = '';
+                    var data = JSON.parse(xhr.responseText);
+                    if (data && data[selectedDepartamento]) {
+                        data[selectedDepartamento].forEach(function(item) {
+                            var option = document.createElement('option');
+                            option.value = item;
+                            option.text = item;
+                            municipiosSelect.appendChild(option);
+                        });
+                    }
+                } else {
+                    console.log('Request failed. Status:', xhr.status);
+                }
+            };
+            xhr.send();
+        });
+
+    </script>
+<style>
+
+body {
+    background-color: #212A3E;
+    color:#F2E3DB;
+}
+
+table {
+    font-size:1.1rem;
+}
+nav {
+background-color:  #116D6E;
+}
+
+.bg-code {
+    background-color:black;
+    width:80%;
+}
+.highlight{
+    background-color: #E57C23;
+}
+
+bg-transparent-title {
+    background-color: red;
+}
+
+.bg-transparent {
+    background-color: #E57C23 !importnt;
+}
+.code-title {
+    color:#E57C23;
+    font-size:18px;
+    font-weight:bold;
+    letter-spacing:1.5px;"
+}
+
+</style>
+</html>
